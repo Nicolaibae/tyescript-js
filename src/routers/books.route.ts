@@ -12,7 +12,7 @@ export const router = express.Router();
 // lấy toàn bộ sách trong db getAll
 router.get("/getBooks", getBooks);
 // lấy sách theo ID -> getBookByID
-router.get("getBookByID/:id", getBookByID);
+router.get("/getBookByID/:id", getBookByID);
 // tạo book -> createBook
 router.post("/createBook", createBook);
 // xoá books => deleteBook
