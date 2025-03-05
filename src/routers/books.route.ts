@@ -16,6 +16,6 @@ router.get("/getBookByID/:id", getBookByID);
 // tạo book -> createBook
 router.post("/createBook", createBook);
 // xoá books => deleteBook
-router.delete("deleteBook/:id", deleteBook);
+router.delete("/deleteBook/:id", deleteBook);
 // update books => updateBook
-router.put("updateBook/:id", updateBook);
+router.put("/updateBook/:id", updateBook);

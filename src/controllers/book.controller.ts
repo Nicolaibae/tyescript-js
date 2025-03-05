@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import fs from "fs/promises";
 import path from "path";
+import { json } from "stream/consumers";
 
 const filePath = path.join(__dirname, "../models/db.json");
 interface Book {
@@ -32,109 +33,75 @@ export const getBookByID = async (req: Request, res: Response) => {
     console.log("bookID: ", bookID);
     const content = await fs.readFile(filePath, "utf-8");
     console.log("content: ", content);
+    let parseBook: Book[] = []
+    if(content){
+      parseBook= JSON.parse(content)
+    }
+    let getId = parseBook.find((item)=> item.id === Number(bookID))
+    console.log(getId)
+    if(getId){
+      res.status(200).json({message: "Lấy thành công id sách là : ",getId})
+    }
+    else{
+      res.status(500).json({ messsage: "Không tìm thấy id sách" });
+    }
   } catch (error) {
     res.status(500).json({ messsage: "lỗi đọc file json" });
   }
-  // fs.readFile(filePath, "utf-8", (err: Error, data: string) => {
-  //   if (err) {
-  //     console.log("Đang có lỗi:", err);
-  //     return res.status(500).json({ messsage: "lỗi đọc file json" });
-  //   }
-  //   let findBook: Book[] = [];
-  //   if (data) {
-  //     findBook = JSON.parse(data);
-  //   }
-  //   const book = findBook.find((item) => item.id === Number(bookID));
-  //   fs.writeFile(filePath, JSON.stringify(findBook, null, 2), (err: Error) => {
-  //     if (err) {
-  //       console.log("Đang có lỗi:", err);
-  //       return res.status(500).json({ messsage: "lỗi đọc file json" });
-  //     } else {
-  //       if (!book) {
-  //         return res.status(404).json({ message: "Sách không tồn tại" });
-  //       }
-  //     }
-  //     res.status(201).json({ message: "GETBOOKID successfully" });
-  //   });
-  // });
 };
 
-export const createBook = (req: Request, res: Response) => {
-  console.log("createBook");
-  //   tạo mới sách trong db
-  const newBook: Book = req.body;
-  // fs.readFile(filePath, "utf-8", (err: Error, data: string) => {
-  //   if (err) {
-  //     console.log("Đang có lỗi:", err);
-  //     return res.status(500).json({ messsage: "lỗi đọc file json1" });
-  //   }
-  //   let books: Book[] = [];
-  //   if (data) {
-  //     books = JSON.parse(data);
-  //   }
-  //   books.push(newBook);
-  //   fs.writeFile(filePath, JSON.stringify(books, null, 2), (err: Error) => {
-  //     if (err) {
-  //       console.log("error", err);
-  //       return res.status(500).json({ message: "Lỗi ghi file JSON" });
-  //     }
-  //     res
-  //       .status(201)
-  //       .json({ message: "User created successfully", books: newBook });
-  //   });
-  // });
+export const createBook = async(req: Request, res: Response) => {
+  try {
+    const newBook = req.body
+    console.log(newBook)
+    const getBooks = await fs.readFile(filePath,'utf-8');
+    let parseBook: Book[] = []
+    if(getBooks){
+     parseBook = JSON.parse(getBooks)
+    }
+    let dataNew = [...parseBook,newBook]    
+    await fs.writeFile(filePath,JSON.stringify(dataNew,null,2),'utf-8')
+    res.status(200).json({message:"Tạo sách thành công", newBook})
+  } catch (error) {
+    res.status(500).json({ messsage: "lỗi đọc file json" });
+  }
 };
 
-export const deleteBook = (req: Request, res: Response) => {
-  // console.log("deleteBook");
-  const bookID = req.query;
-  // fs.readFile(filePath, "utf-8", (err: Error, data: string) => {
-  //   if (err) {
-  //     console.log("Đang có lỗi:", err);
-  //     return res.status(500).json({ messsage: "lỗi đọc file json" });
-  //   }
-  //   let books: Book[] = [];
-  //   const findBook = books.findIndex(
-  //     (bookItem) => bookItem.id === Number(bookID.id)
-  //   );
-  //   books = books.filter((bookItemID) => bookItemID.id !== findBook);
-  //   fs.writeFile(filePath, JSON.stringify(books, null, 2), (err: Error) => {
-  //     if (err) {
-  //       console.log("Đang có lỗi:", err);
-  //       return res.status(500).json({ messsage: "lỗi đọc file json" });
-  //     }
-  //     res.status(201).json({ message: "User update successfully" });
-  //   });
-  // });
-
-  //   Query tới db.json  tim book theo id và xoá nó ra khỏi db.json
+export const deleteBook = async(req: Request, res: Response) => {
+  
+  try {
+    const deleteBookID = req.params.id;
+    console.log(deleteBookID)
+    const findId = await fs.readFile(filePath,'utf-8')
+    let listBook: Book[] = []
+    if(findId){
+      listBook = JSON.parse(findId)
+    }
+    let checkBook = listBook.filter((book)=>book.id !== Number(deleteBookID))
+    await fs.writeFile(filePath,JSON.stringify(checkBook,null,2),'utf-8')
+    res.status(200).json({message: "xóa thành công book "})
+  } catch (error) {
+    res.status(500).json({ messsage: "lỗi đọc file json" });
+  }
+  
 };
 
-export const updateBook = (req: Request, res: Response) => {
-  // console.log("updateBook");
-  //   Query tới db.json  tim book theo id và update nó ra khỏi db.json
-  const newBook = req.body;
-  // fs.readFile(filePath, "utf-8", (err: Error, data: string) => {
-  //   if (err) {
-  //     console.log("Đang có lỗi:", err);
-  //     return res.status(500).json({ messsage: "lỗi đọc file json" });
-  //   }
-  //   let updateBook: Book[] = [];
-  //   if (data) {
-  //     updateBook = JSON.parse(data);
-  //   }
-  //   const checkUpdate = updateBook.findIndex(
-  //     (item) => item.id === Number(newBook.id)
-  //   );
-  //   if (checkUpdate !== -1) {
-  //     updateBook[checkUpdate] = { ...newBook };
-  //   }
-  //   fs.writeFile(filePath, JSON.stringify(updateBook, null, 2), (err) => {
-  //     if (err) {
-  //       console.log("error", err);
-  //       return res.status(500).json({ message: "Lỗi ghi file JSON" });
-  //     }
-  //     res.status(201).json({ message: "Book update successfully" });
-  //   });
-  // });
+export const updateBook = async(req: Request, res: Response) => {
+  try {
+    const UpdateBook = req.body;
+    console.log(UpdateBook)
+    const readData = await fs.readFile(filePath,'utf-8')
+    let listBook: Book[]= []
+    if(readData){
+      listBook = JSON.parse(readData)
+    }
+    let bookIndex = listBook.findIndex((bookId)=>bookId.id === Number(UpdateBook.id))
+    listBook[bookIndex]=UpdateBook
+    await fs.writeFile(filePath,JSON.stringify(listBook,null,2),'utf-8')
+    res.status(200).json({message: "cập nhập thành công book ", listBook})
+  } catch (error) {
+    res.status(500).json({ messsage: "lỗi đọc file json" });
+  }
+ 
+  
 };
